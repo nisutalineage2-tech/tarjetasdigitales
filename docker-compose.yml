@@ -1,0 +1,31 @@
+services:
+  tarjetas:
+    build: .
+    container_name: tarjetas
+    ports:
+      - "8082:80"
+    volumes:
+      - ./www:/var/www/html
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=hauserver_user
+      - MYSQL_PASSWORD=hauserver_pass
+      - MYSQL_DB=tarjetas_db
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: tarjetas_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: tarjetas_db
+      MYSQL_USER: tarjetas_user
+      MYSQL_PASSWORD: dIxb31NvfH6li4Qc
+      MYSQL_ROOT_PASSWORD: dIxb31NvfH6li4Qc
+    volumes:
+      - ./db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+  www:
