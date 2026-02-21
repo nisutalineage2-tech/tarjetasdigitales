@@ -1,9 +1,12 @@
 FROM php:8.2-apache
 
+# Instalamos extensiones necesarias para MySQL
+RUN docker-php-ext-install pdo pdo_mysql mysqli curl
+
 RUN a2enmod rewrite
 
-# Copiamos solo el contenido de la carpeta www
+# Copiamos el contenido
 COPY ./www /var/www/html/
 
-# Aseguramos la carpeta de categorías y permisos
+# Permisos
 RUN chown -R www-data:www-data /var/www/html
