@@ -6,6 +6,7 @@ services:
       - "8082:80"
     volumes:
       - ./www:/var/www/html
+    restart: always
     environment:
       - MYSQL_HOST=db
       - MYSQL_USER=hauserver_user
