@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Si el subdominio existe como carpeta en /clientes/, hacemos el rewrite interno
+RewriteCond %{HTTP_HOST} ^([^.]+)\.tarjeta\.hausetienda\.com\.ar$ [NC]
+RewriteCond %{DOCUMENT_ROOT}/clientes/%1 -d
+RewriteRule ^$ /clientes/%1/index.php [L]

@@ -5,8 +5,8 @@ require 'db.php'; // Aquí ya traemos el objeto $pdo desde tu db.php
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $u = $_POST['usuario'];
-    $p = $_POST['password'];
+$u = trim($_POST['usuario']);
+$p = $_POST['password'];
 
     // Buscamos al usuario
     $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE usuario = ?");

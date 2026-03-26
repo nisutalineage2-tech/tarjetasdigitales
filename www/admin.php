@@ -1,12 +1,14 @@
 <?php
 session_start();
-require 'db.php';
 
-// 1. Protección de ruta
+// Si no hay sesión, mandalo al login
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit;
 }
+
+require 'db.php';
+$usuario_logueado = $_SESSION['usuario'];
 
 $user_id = $_SESSION['admin_id'];
 $msg = "";
@@ -31,15 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_config'])) {
     $upd = $pdo->prepare("UPDATE usuarios SET config_json = ? WHERE id = ?");
     
     if($upd->execute([$json_upd, $user_id])) {
-        $msg = "Configuración guardada en la base de datos correctamente.";
+        $msg = "Datos Actualizados Correctamente";
     }
 }
 
-// 4. Procesar subida de archivos (Se mantiene igual, por ahora físico)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
     $dest = $_POST['file_name'];
-    if(move_uploaded_file($_FILES['up_file']['tmp_name'], __DIR__ . '/' . $dest)) {
-        echo "success";
+    $user_folder = __DIR__ . "/clientes/" . $_SESSION['usuario'] . "/"; 
+    
+    if(move_uploaded_file($_FILES['up_file']['tmp_name'], $user_folder . $dest)) {
+        echo "Subido Correctamente";
         exit;
     }
 }
@@ -49,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Premium | Tarjetas Digitales</title>
+    <title>HSTD | Panel de Control</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -94,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
         nav a:hover, nav a.active { background: rgba(255, 255, 255, 0.05); color: #fff; }
         nav a.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(255, 0, 128, 0.3); }
 
-        main { flex: 1; margin-left: 280px; padding: 50px; max-width: 1100px; }
+	main { flex: 1; margin-left: 280px; padding: 50px; max-width: 1100px; }
         .card { background: var(--card-bg); border-radius: 20px; padding: 30px; border: 1px solid var(--border); margin-bottom: 30px; animation: fadeIn 0.4s ease; }
         .card h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
 
@@ -122,21 +125,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
 <body>
 
 <nav>
-    <div class="logo-area"><i class="fas fa-robot"></i><h2><span>Panel de control</span></h2></div>
+    <div class="logo-area"><i class="fas fa-robot"></i><h2><span>TD by HauseTienda</span></h2></div>
     
     <div class="user-badge">
         <i class="fas fa-user-circle fa-lg"></i>
-        <span><b><?php echo ucfirst($nombre_usuario); ?></b></span>
+        <span><b>Hola <?php echo ucfirst($nombre_usuario); ?> !</b></span>
     </div>
 
-    <a onclick="sh('s-info')" id="l-info" class="active"><i class="fas fa-id-card"></i> Información</a>
+    <a onclick="sh('s-info')" id="l-info" class="active"><i class="fas fa-id-card"></i> General</a>
     <a onclick="sh('s-evento')" id="l-evento"><i class="fas fa-map-marker-alt"></i> Evento</a>
-    <a onclick="sh('s-multi')" id="l-multi"><i class="fas fa-photo-film"></i> Multimedia</a>
+    <a onclick="sh('s-multi')" id="l-multi"><i class="fas fa-photo-film"></i> Galeria</a>
     <a onclick="sh('s-regalos')" id="l-regalos"><i class="fas fa-gift"></i> Regalos</a>
     <a onclick="sh('s-frases')" id="l-frases"><i class="fas fa-quote-right"></i> Frases</a>
     
     <div style="margin-top: auto;">
-        <a href="index.php?u=<?php echo $nombre_usuario; ?>" target="_blank" style="color:var(--primary)"><i class="fas fa-laptop"></i> Ver Sitio</a>
+	<a href="index.php?u=<?php echo $nombre_usuario; ?>" target="_blank" style="color:var(--primary)"><i class="fas fa-external-link-alt"></i> Ver Invitacion</a>
         <a href="logout.php" style="color:#ff4d4d; font-size: 0.8rem; opacity: 0.8;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
     </div>
 </nav>
@@ -148,23 +151,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
         </div> 
     <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" onsubmit="this.action = window.location.hash;">
         <input type="hidden" name="update_config" value="1">
 
 <div id="s-info" class="section active">
     <div class="card">
-        <h3><i class="fas fa-palette"></i> Personalización de Colores (HauseBot 2.0)</h3>
+        <h3><i class="fas fa-palette"></i> Personalización de Colores</h3>
         <div class="form-grid">
             <div class="input-group">
-                <label>Subtítulos</label>
+                <label>Color Nombre Principal y Titulos</label>
                 <input type="color" name="field[color_titulos]" value="<?php echo $config['color_titulos'] ?? '#ff0080'; ?>">
             </div>
             <div class="input-group">
-                <label>Titulos</label>
+                <label>SubTitulos</label>
                 <input type="color" name="field[color_frases]" value="<?php echo $config['color_frases'] ?? '#00ffff'; ?>">
             </div>
             <div class="input-group">
-                <label>Texto Base (Cuerpo)</label>
+                <label>Texto Principal</label>
                 <input type="color" name="field[color_texto_base]" value="<?php echo $config['color_texto_base'] ?? '#ffffff'; ?>">
             </div>
 
@@ -206,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
                     $principales = ["1.jpg" => "Splash", "10.jpg" => "Hero", "11.jpg" => "Frase Final"];
                     foreach($principales as $img => $n): ?>
                     <div class="media-item">
-                        <img src="<?php echo $img; ?>?v=<?php echo time(); ?>" id="preview-<?php echo str_replace('.','-',$img); ?>">
+                        <img src="clientes/<?php echo $nombre_usuario; ?>/<?php echo $img; ?>?v=<?php echo filemtime(__DIR__ . "/clientes/$nombre_usuario/$img"); ?>" id="preview-<?php echo str_replace('.','-',$img); ?>">
                         <label class="upload-btn">
                             Cambiar <?php echo $n; ?>
                             <input type="file" hidden onchange="upload(this, '<?php echo $img; ?>')">
@@ -220,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
                 <div class="media-grid">
                     <?php for($i=2; $i<=9; $i++): $img = $i.".jpg"; ?>
                     <div class="media-item">
-                        <img src="<?php echo $img; ?>?v=<?php echo time(); ?>" id="preview-<?php echo $i; ?>-jpg">
+			<img src="clientes/<?php echo $nombre_usuario; ?>/<?php echo $img; ?>?v=<?php echo filemtime(__DIR__ . "/clientes/$nombre_usuario/$img"); ?>" id="preview-<?php echo $i; ?>-jpg">
                         <label class="upload-btn">
                             Foto <?php echo ($i-1); ?>
                             <input type="file" hidden onchange="upload(this, '<?php echo $img; ?>')">
@@ -268,13 +271,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
     </form>
 </main>
 
+
 <script>
-    function sh(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.getElementById('l-' + id.split('-')[1]).classList.add('active');
+function sh(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    
+    document.getElementById(id).classList.add('active');
+    document.getElementById('l-' + id.split('-')[1]).classList.add('active');
+    
+    window.location.hash = id;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const currentHash = window.location.hash; // Captura el #s-evento, por ejemplo
+    if (currentHash) {
+        const id = currentHash.replace('#', '');
+        if (document.getElementById(id)) {
+            sh(id); // Si el ID existe, abre esa pestaña
+        }
     }
+});
 
     function upload(input, fileName) {
         if (!input.files[0]) return;
@@ -288,15 +305,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['up_file'])) {
 
         fetch('', { method: 'POST', body: fd })
         .then(res => res.text())
-        .then(data => {
-            if(data.includes("success")) {
-                const imgId = "preview-" + fileName.replace('.', '-');
-                const imgEl = document.getElementById(imgId);
-                if(imgEl) imgEl.src = fileName + "?v=" + new Date().getTime();
-                btn.innerHTML = '¡Listo! <i class="fas fa-check"></i>';
-                setTimeout(() => { btn.innerText = originalText; }, 2000);
-            }
-        });
+	.then(data => {
+    if(data.includes("Subido")) {
+        const imgId = "preview-" + fileName.replace('.', '-');
+        const imgEl = document.getElementById(imgId);
+        if(imgEl) {
+            // Agregamos un timestamp nuevo para forzar la recarga del navegador
+            imgEl.src = "clientes/<?php echo $nombre_usuario; ?>/" + fileName + "?v=" + new Date().getTime();
+        }
+        btn.innerHTML = '¡Listo! <i class="fas fa-check"></i>';
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
+    }
+});
     }
 </script>
 </body>
